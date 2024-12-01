@@ -2,34 +2,36 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/joeriddles/advent-of-code-2024/pkg"
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("single filepath required")
-		os.Exit(1)
-	}
-	fp := os.Args[1]
-	bytes, err := os.ReadFile(fp)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	input := string(bytes)
+	day1 := &Day1{}
+	input := day1.Parse()
 
-	answer1 := part1(input)
+	answer1 := day1.Part1(input)
 	fmt.Printf("answer 1: %v\n", answer1)
 
-	answer2 := part2(input)
+	answer2 := day1.Part2(input)
 	fmt.Printf("answer 2: %v\n", answer2)
 }
 
-func part1(src string) int {
-	lists := parse(src)
+type Day1 struct {
+	*pkg.BaseDay
+}
+
+func NewDay1() pkg.Day {
+	return &Day1{
+		BaseDay: pkg.NewBaseDay(),
+	}
+}
+
+func (d *Day1) Part1(src string) int {
+	lists := d.parseInts(src)
 	ls := *lists[0]
 	rs := *lists[1]
 	sort.Ints(ls)
@@ -45,8 +47,8 @@ func part1(src string) int {
 	return res
 }
 
-func part2(src string) int {
-	lists := parse(src)
+func (d *Day1) Part2(src string) int {
+	lists := d.parseInts(src)
 	ls := *lists[0]
 	rs := *lists[1]
 
@@ -72,8 +74,8 @@ func part2(src string) int {
 	return res
 }
 
-func parse(src string) []*[]int {
-	lines := strings.Split(src, "\n")
+func (d *Day1) parseInts(input string) []*[]int {
+	lines := strings.Split(input, "\n")
 	ls := []int{}
 	rs := []int{}
 	for _, line := range lines {

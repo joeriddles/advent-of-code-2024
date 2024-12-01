@@ -12,7 +12,7 @@ func TestPart1(t *testing.T) {
 `
 
 	expected := 11
-	actual := part1(src)
+	actual := (&Day1{}).Part1(src)
 
 	if actual != expected {
 		t.Fatalf("expected %v, got %v", expected, actual)
@@ -29,7 +29,7 @@ func TestPart2(t *testing.T) {
 `
 
 	expected := 31
-	actual := part2(src)
+	actual := (&Day1{}).Part2(src)
 
 	if actual != expected {
 		t.Fatalf("expected %v, got %v", expected, actual)
