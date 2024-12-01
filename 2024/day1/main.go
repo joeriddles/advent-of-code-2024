@@ -20,11 +20,59 @@ func main() {
 		os.Exit(1)
 	}
 	input := string(bytes)
-	answer := test(input)
-	fmt.Printf("answer: %v\n", answer)
+
+	answer1 := part1(input)
+	fmt.Printf("answer 1: %v\n", answer1)
+
+	answer2 := part2(input)
+	fmt.Printf("answer 2: %v\n", answer2)
 }
 
-func test(src string) int {
+func part1(src string) int {
+	lists := parse(src)
+	ls := *lists[0]
+	rs := *lists[1]
+	sort.Ints(ls)
+	sort.Ints(rs)
+
+	res := 0
+	for i, l := range ls {
+		r := rs[i]
+		diff := abs(r - l)
+		res += diff
+	}
+
+	return res
+}
+
+func part2(src string) int {
+	lists := parse(src)
+	ls := *lists[0]
+	rs := *lists[1]
+
+	rmap := map[int]int{}
+	for _, r := range rs {
+		if _, ok := rmap[r]; !ok {
+			rmap[r] = 0
+		}
+		rmap[r]++
+	}
+
+	res := 0
+	for _, l := range ls {
+		rcount, ok := rmap[l]
+		if !ok {
+			rcount = 0
+		}
+
+		sim := l * rcount
+		res += sim
+	}
+
+	return res
+}
+
+func parse(src string) []*[]int {
 	lines := strings.Split(src, "\n")
 	ls := []int{}
 	rs := []int{}
@@ -41,17 +89,8 @@ func test(src string) int {
 		ls = append(ls, l)
 		rs = append(rs, r)
 	}
-	sort.Ints(ls)
-	sort.Ints(rs)
 
-	res := 0
-	for i, l := range ls {
-		r := rs[i]
-		diff := abs(r - l)
-		res += diff
-	}
-
-	return res
+	return []*[]int{&ls, &rs}
 }
 
 func abs(i int) int {
