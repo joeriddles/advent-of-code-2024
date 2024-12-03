@@ -23,7 +23,7 @@ type Day2 struct {
 	*day.BaseDay
 }
 
-func NewDay1() day.Day {
+func NewDay2() day.Day {
 	return &Day2{
 		BaseDay: day.NewBaseDay(),
 	}
