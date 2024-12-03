@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/joeriddles/advent-of-code-2024/pkg/day"
 )
@@ -27,10 +30,32 @@ func NewDay3() day.Day {
 	}
 }
 
+var MUL_PATTERN = regexp.MustCompile(`mul\((\d+),(\d+)\)`)
+
 func (d *Day3) Part1(input string) int {
-	return -1
+	result := 0
+	lines := strings.Split(input, "\n")
+	for _, line := range lines {
+		result += d.findMul(line)
+	}
+	return result
 }
 
 func (d *Day3) Part2(input string) int {
-	return -1
+	result := 0
+
+	return result
+}
+
+func (d *Day3) findMul(input string) int {
+	result := 0
+	matches := MUL_PATTERN.FindAllStringSubmatch(input, -1)
+	for _, match := range matches {
+		lstr := match[1]
+		rstr := match[2]
+		l, _ := strconv.Atoi(lstr)
+		r, _ := strconv.Atoi(rstr)
+		result += l * r
+	}
+	return result
 }
