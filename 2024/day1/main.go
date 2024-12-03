@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/joeriddles/advent-of-code-2024/pkg"
+	"github.com/joeriddles/advent-of-code-2024/pkg/day"
+	"github.com/joeriddles/advent-of-code-2024/pkg/util"
 )
 
 func main() {
@@ -21,12 +22,12 @@ func main() {
 }
 
 type Day1 struct {
-	*pkg.BaseDay
+	*day.BaseDay
 }
 
-func NewDay1() pkg.Day {
+func NewDay1() day.Day {
 	return &Day1{
-		BaseDay: pkg.NewBaseDay(),
+		BaseDay: day.NewBaseDay(),
 	}
 }
 
@@ -40,7 +41,7 @@ func (d *Day1) Part1(src string) int {
 	res := 0
 	for i, l := range ls {
 		r := rs[i]
-		diff := abs(r - l)
+		diff := util.Abs(r - l)
 		res += diff
 	}
 
@@ -93,11 +94,4 @@ func (d *Day1) parseInts(input string) []*[]int {
 	}
 
 	return []*[]int{&ls, &rs}
-}
-
-func abs(i int) int {
-	if i < 0 {
-		i = -1 * i
-	}
-	return i
 }

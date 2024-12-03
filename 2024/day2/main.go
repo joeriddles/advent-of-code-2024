@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"slices"
-	"strconv"
-	"strings"
 
-	"github.com/joeriddles/advent-of-code-2024/pkg"
+	"github.com/joeriddles/advent-of-code-2024/pkg/day"
+	"github.com/joeriddles/advent-of-code-2024/pkg/util"
 )
 
 func main() {
@@ -21,19 +20,17 @@ func main() {
 }
 
 type Day2 struct {
-	*pkg.BaseDay
+	*day.BaseDay
 }
 
-func NewDay1() pkg.Day {
+func NewDay1() day.Day {
 	return &Day2{
-		BaseDay: pkg.NewBaseDay(),
+		BaseDay: day.NewBaseDay(),
 	}
 }
 
-const INCREASING = true
-
 func (d *Day2) Part1(input string) int {
-	reports := d.parse(input)
+	reports := util.ParseIntSlices(input)
 	safe := 0
 	for _, report := range reports {
 		if d.isSafe(report) {
@@ -44,7 +41,7 @@ func (d *Day2) Part1(input string) int {
 }
 
 func (d *Day2) Part2(input string) int {
-	reports := d.parse(input)
+	reports := util.ParseIntSlices(input)
 	safe := 0
 	for _, report := range reports {
 		if d.isAlmostSafe(report) {
@@ -69,7 +66,7 @@ func (d *Day2) isSafe(report *[]int) bool {
 			return false
 		}
 
-		a := abs(diff)
+		a := util.Abs(diff)
 		if a < 1 || a > 3 {
 			return false
 		}
@@ -94,26 +91,4 @@ func (d *Day2) isAlmostSafe(report *[]int) bool {
 	}
 	return false
 
-}
-
-func (d *Day2) parse(input string) []*[]int {
-	reports := []*[]int{}
-	lines := strings.Split(input, "\n")
-	for _, line := range lines {
-		parts := strings.Split(line, " ")
-		report := []int{}
-		for _, part := range parts {
-			level, _ := strconv.Atoi(part)
-			report = append(report, level)
-		}
-		reports = append(reports, &report)
-	}
-	return reports
-}
-
-func abs(i int) int {
-	if i < 0 {
-		i = -1 * i
-	}
-	return i
 }
