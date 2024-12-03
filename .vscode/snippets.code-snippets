@@ -1,0 +1,62 @@
+{
+	// Place your advent-of-code-2024 workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"day": {
+		"description": "Define a new day struct",
+		"scope": "go,golang",
+		"prefix": "day",
+		"body": [
+			"package main",
+			"",
+			"import (",
+			"\t\"fmt\"",
+			"",
+			"\t\"github.com/joeriddles/advent-of-code-2024/pkg/day\"",
+			")",
+			"",
+			"func main() {",
+			"\tday := &Day$0{}",
+			"\tinput := day.Parse()",
+			"",
+			"\tanswer1 := day.Part1(input)",
+			"\tfmt.Printf(\"part1: %v\\n\", answer1)",
+			"",
+			"\tanswer2 := day.Part2(input)",
+			"\tfmt.Printf(\"part2: %v\\n\", answer2)",
+			"}",
+			"",
+			"type Day$0 struct {",
+			"\t*day.BaseDay",
+			"}",
+			"",
+			"func NewDay$0() day.Day {",
+			"\treturn &Day$0{",
+			"\t\tBaseDay: day.NewBaseDay(),",
+			"\t}",
+			"}",
+			"",
+			"func (d *Day$0) Part1(input string) int {",
+			"\treturn -1",
+			"}",
+			"",
+			"func (d *Day$0) Part2(input string) int {",
+			"\treturn -1",
+			"}",
+
+		]
+	}
+}
