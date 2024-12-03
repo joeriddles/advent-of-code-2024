@@ -14,10 +14,10 @@ func main() {
 	input := day1.Parse()
 
 	answer1 := day1.Part1(input)
-	fmt.Printf("answer 1: %v\n", answer1)
+	fmt.Printf("part1: %v\n", answer1)
 
 	answer2 := day1.Part2(input)
-	fmt.Printf("answer 2: %v\n", answer2)
+	fmt.Printf("part2: %v\n", answer2)
 }
 
 type Day1 struct {
