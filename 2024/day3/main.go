@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 	"strconv"
@@ -10,9 +11,13 @@ import (
 	"github.com/joeriddles/advent-of-code-2024/pkg/day"
 )
 
+var debug bool = false
+
 func main() {
 	day := &Day3{}
 	input := day.Parse()
+
+	debug = len(os.Args) == 3 && os.Args[2] == "--debug"
 
 	answer1 := day.Part1(input)
 	fmt.Printf("part1: %v\n", answer1)
@@ -76,7 +81,9 @@ func (d *Day3) findMulWithDos(input string) int {
 	donts := d.getIndexes(DONT_PATTERN.FindAllStringSubmatchIndex(input, -1))
 	muls := MUL_PATTERN.FindAllStringSubmatchIndex(input, -1)
 
-	d.printMatches(input, dos, donts, muls)
+	if debug {
+		d.printMatches(input, dos, donts, muls)
+	}
 
 	for _, match := range muls {
 		enabled := d.isEnabled(match[0], &dos, &donts)
@@ -92,6 +99,7 @@ func (d *Day3) findMulWithDos(input string) int {
 	return result
 }
 
+// Check if the most recent command is to enable or disable multiplication.
 func (d *Day3) isEnabled(i int, dos *[]int, donts *[]int) bool {
 	lastDo := -1
 	lastDont := -1
@@ -130,15 +138,16 @@ const (
 func (d *Day3) printMatches(input string, dos []int, donts []int, muls [][]int) {
 	mulIndexes := d.getIndexes(muls)
 
+	result := 0
 	enabled := true
 	for i := range input {
 		if slices.Contains(dos, i) {
 			enabled = true
-			fmt.Printf(Reset+"%4v: %v\n", i, input[i:i+4])
+			fmt.Printf(Reset+"\n%4v: %v -- %v\n", i, input[i:i+4], result)
 		}
 		if slices.Contains(donts, i) {
 			enabled = false
-			fmt.Printf(Reset+"%4v: %v\n", i, input[i:i+7])
+			fmt.Printf(Reset+"\n%4v: %v -- %v\n", i, input[i:i+7], result)
 		}
 		if slices.Contains(mulIndexes, i) {
 			for _, mul := range muls {
@@ -148,11 +157,19 @@ func (d *Day3) printMatches(input string, dos []int, donts []int, muls [][]int) 
 				}
 
 				if mul[0] == i {
-					fmt.Printf(color+"%4v: %v\n", i, input[mul[0]:mul[1]])
+					if enabled {
+						lstr := input[mul[2]:mul[3]]
+						rstr := input[mul[4]:mul[5]]
+						l, _ := strconv.Atoi(lstr)
+						r, _ := strconv.Atoi(rstr)
+						result += l * r
+					}
+
+					fmt.Printf(color+"%v: %v ", i, input[mul[0]:mul[1]])
 					break
 				}
 			}
 		}
 	}
-	fmt.Println("-------")
+	fmt.Println(Reset + "\n-------")
 }
