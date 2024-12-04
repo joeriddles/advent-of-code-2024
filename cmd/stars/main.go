@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"slices"
+	"strings"
 
 	"github.com/anaskhan96/soup"
 	"github.com/joeriddles/advent-of-code-2024/pkg/util"
@@ -35,7 +37,7 @@ func main() {
 
 	jar.SetCookies(AOC_URL, []*http.Cookie{
 		{
-			Name:  "SESSION",
+			Name:  "session",
 			Value: session,
 		},
 	})
@@ -60,20 +62,28 @@ func main() {
 
 	doc := soup.HTMLParse(string(body))
 	labels := []string{}
+
+	user := doc.Find("div", "class", "user")
+	if user.Error != nil {
+		util.LogErrf("invalid AOC_SESSION environment variable\n")
+		os.Exit(1)
+	}
+
 	for _, link := range doc.FindAll("a") {
 		dayEl := link.Find("span", "class", "calendar-day")
 		if dayEl.Error != nil {
 			continue
 		}
-		day := dayEl.Text()
+		day := strings.Trim(dayEl.Text(), " ")
 
-		part1Complete := link.Find("span", "class", "calendar-mark-complete").Error == nil
-		part2Complete := link.Find("span", "class", "calendar-mark-verycomplete").Error == nil
+		class := strings.Split(link.Attrs()["class"], " ")
+		complete := slices.Contains(class, "calendar-complete")
+		verycomplete := slices.Contains(class, "calendar-verycomplete")
 
 		stars := ""
-		if part2Complete {
+		if verycomplete {
 			stars = "⭐️⭐️"
-		} else if part1Complete {
+		} else if complete {
 			stars = "⭐️"
 		}
 
