@@ -1,3 +1,4 @@
+#!/bin/bash
 if git diff --quiet; then
   exit 0
 else

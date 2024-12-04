@@ -19,9 +19,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.22.x
-      - run: |
+      - name: Run ./cmd/stars/main.go
+        env:
+          AOC_SESSION: ${{ secrets.AOC_SESSION }}
+        run: |
           go mod tidy
           go run ./cmd/stars/main.go
-          if git diff --quiet; else
-            echo "Changes found."
-          fi
+      - name: Push changes 
+        run: ./push-changes.sh
