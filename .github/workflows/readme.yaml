@@ -28,7 +28,7 @@ jobs:
           go run ./cmd/stars/main.go
       - name: Push changes 
         run: |
-          if git diff README.md --quiet; then
+          if git diff --quiet README.md; then
             exit 0
           else
             git config user.email 'joeriddles10@gmail.com'
