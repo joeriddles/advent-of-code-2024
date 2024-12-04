@@ -178,12 +178,32 @@ MXMXAXMASX`
 }
 
 func TestPart2(t *testing.T) {
+	day := &Day4{}
+
 	src := `
 M.S
 .A.
 M.S`
-	actual := (&Day4{}).Part2(src)
-	assert(t, actual, 1)
+	assert(t, day.Part2(src), 1)
+
+	src = `
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.`
+	assert(t, day.Part2(src), 4)
+
+	src = `
+.M.S......
+..A..MSMS.
+.M.S.MAA..
+..A.ASMSM.
+.M.S.M....
+..........
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.
+..........`
+	assert(t, day.Part2(src), 9)
 }
 
 func assert(t *testing.T, actual int, expected int) {

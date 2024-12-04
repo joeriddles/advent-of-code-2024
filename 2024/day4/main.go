@@ -7,7 +7,11 @@ import (
 	"strings"
 
 	"github.com/joeriddles/advent-of-code-2024/pkg/day"
+	"github.com/joeriddles/advent-of-code-2024/pkg/util"
 )
+
+const XMAS = "XMAS"
+const MAS = "MAS"
 
 var debug = false
 
@@ -98,7 +102,7 @@ func (d *Day4) Part1(input string) int {
 	}
 
 	// Diagonal
-	diags := d.getDiags(runes)
+	diags := d.getDiags(runes, len(XMAS))
 	for _, diag := range diags {
 		xmas.diagonal += d.solve1(diag)
 	}
@@ -108,7 +112,7 @@ func (d *Day4) Part1(input string) int {
 	for _, line := range backwards {
 		slices.Reverse(line)
 	}
-	diags = d.getDiags(backwards)
+	diags = d.getDiags(backwards, len(XMAS))
 	for _, diag := range diags {
 		xmas.diagonalBackwards += d.solve1(diag)
 	}
@@ -117,7 +121,7 @@ func (d *Day4) Part1(input string) int {
 	upsidedown := d.deepCopy(runes)
 	slices.Reverse(upsidedown)
 
-	diags = d.getDiags(upsidedown)
+	diags = d.getDiags(upsidedown, len(XMAS))
 	for _, diag := range diags {
 		xmas.diagonalUpsidedown += d.solve1(diag)
 	}
@@ -126,7 +130,7 @@ func (d *Day4) Part1(input string) int {
 	for _, line := range upsidedown {
 		slices.Reverse(line)
 	}
-	diags = d.getDiags(upsidedown)
+	diags = d.getDiags(upsidedown, len(XMAS))
 	for _, diag := range diags {
 		xmas.diagonalBackwardsUpsidedown += d.solve1(diag)
 	}
@@ -145,12 +149,20 @@ func (d *Day4) Part2(input string) int {
 		runes = append(runes, []rune(line))
 	}
 
-	xmas := &xmas{}
+	indexes := map[string]int{}
+
+	rows := len(runes)
+	cols := len(runes[0])
 
 	// Diagonal
-	diags := d.getDiags(runes)
-	for _, diag := range diags {
-		xmas.diagonal += d.solve1(diag)
+	locs := d.getDiagsLoc(runes, len(MAS))
+	for _, loc := range locs {
+		for _, c := range d.solve2(loc) {
+			if debug {
+				fmt.Printf("%v\n", c)
+			}
+			d.increment(indexes, c.key())
+		}
 	}
 
 	// Diagonal -- Backwards
@@ -158,12 +170,66 @@ func (d *Day4) Part2(input string) int {
 	for _, line := range backwards {
 		slices.Reverse(line)
 	}
-	diags = d.getDiags(backwards)
-	for _, diag := range diags {
-		xmas.diagonalBackwards += d.solve1(diag)
+	locs = d.getDiagsLoc(backwards, len(MAS))
+	if debug {
+		util.LogSuccessf("-- backwards\n")
+	}
+	for _, loc := range locs {
+		for _, c := range d.solve2(loc) {
+			// Flip x index because we flipped the whole row
+			c.x = (cols + 1) - c.x
+
+			if debug {
+				fmt.Printf("%v\n", c)
+			}
+			d.increment(indexes, c.key())
+		}
 	}
 
-	result := xmas.sum()
+	// Diagonal -- Upside-down
+	upsidedown := d.deepCopy(runes)
+	slices.Reverse(upsidedown)
+	locs = d.getDiagsLoc(upsidedown, len(MAS))
+	if debug {
+		util.LogSuccessf("-- upside-down\n")
+	}
+	for _, loc := range locs {
+		for _, c := range d.solve2(loc) {
+			c.y = (rows + 1) - c.y
+
+			if debug {
+				fmt.Printf("%v\n", c)
+			}
+			d.increment(indexes, c.key())
+		}
+	}
+
+	// Diagonal -- Upside-down & backwards
+	for _, line := range upsidedown {
+		slices.Reverse(line)
+	}
+	locs = d.getDiagsLoc(upsidedown, len(MAS))
+	if debug {
+		util.LogSuccessf("-- backwards and upside-down\n")
+	}
+	for _, loc := range locs {
+		for _, c := range d.solve2(loc) {
+			c.x = (cols + 1) - c.x
+			c.y = (rows + 1) - c.y
+
+			if debug {
+				fmt.Printf("%v\n", c)
+			}
+			d.increment(indexes, c.key())
+		}
+	}
+
+	result := 0
+	for _, val := range indexes {
+		if val == 2 {
+			result++
+		}
+	}
 	return result
 }
 
@@ -178,12 +244,31 @@ func (d *Day4) solve1(str []rune) int {
 	return result
 }
 
+// Return a slice of indexes of A
+func (d *Day4) solve2(loc []char) []char {
+	result := []char{}
+	s := newStateMachine([]rune("MAS"))
+	for _, char := range loc {
+		if s.Next(char.rune) {
+			result = append(result, char)
+		}
+	}
+	return result
+}
+
 func (d *Day4) deepCopy(runes [][]rune) [][]rune {
 	copy := [][]rune{}
 	for _, line := range runes {
 		copy = append(copy, slices.Clone(line))
 	}
 	return copy
+}
+
+func (d *Day4) increment(kvs map[string]int, key string) {
+	if _, ok := kvs[key]; !ok {
+		kvs[key] = 0
+	}
+	kvs[key]++
 }
 
 func (d *Day4) getCol(i int, lines [][]rune) []rune {
@@ -194,7 +279,7 @@ func (d *Day4) getCol(i int, lines [][]rune) []rune {
 	return col
 }
 
-func (d *Day4) getDiags(lines [][]rune) [][]rune {
+func (d *Day4) getDiags(lines [][]rune, minSize int) [][]rune {
 	rows := len(lines)
 	cols := len(lines[0])
 
@@ -213,7 +298,7 @@ func (d *Day4) getDiags(lines [][]rune) [][]rune {
 				break
 			}
 		}
-		if len(diag) >= 4 {
+		if len(diag) >= minSize {
 			diags = append(diags, diag)
 		}
 
@@ -227,6 +312,56 @@ func (d *Day4) getDiags(lines [][]rune) [][]rune {
 	}
 
 	return diags
+}
+
+type char struct {
+	rune rune
+	// x,y are 1-based indexing
+	x int
+	y int
+}
+
+func (c char) key() string {
+	return fmt.Sprintf("%v.%v", c.x, c.y)
+}
+
+func (c char) String() string {
+	return c.key() + ": " + string(c.rune)
+}
+
+func (d *Day4) getDiagsLoc(lines [][]rune, minSize int) [][]char {
+	rows := len(lines)
+	cols := len(lines[0])
+
+	startY := rows - 1
+	startX := 0
+
+	chars := [][]char{}
+	for {
+		diag := []char{}
+		x, y := startX, startY
+		for {
+			diag = append(diag, char{rune: rune(lines[y][x]), x: x, y: y})
+			x++
+			y++
+			if x == cols || y == rows {
+				break
+			}
+		}
+		if len(diag) >= minSize {
+			chars = append(chars, diag)
+		}
+
+		if startY > 0 {
+			startY--
+		} else if startX < cols-1 {
+			startX++
+		} else {
+			break
+		}
+	}
+
+	return chars
 }
 
 func newStateMachine(word []rune) *stateMachine {
@@ -260,4 +395,12 @@ func (s *stateMachine) Next(next rune) bool {
 		s.index = -1
 	}
 	return false
+}
+
+func printChars(chars []char) {
+	runes := []rune{}
+	for _, char := range chars {
+		runes = append(runes, char.rune)
+	}
+	fmt.Printf("%v\n", string(runes))
 }
