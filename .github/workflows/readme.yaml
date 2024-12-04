@@ -6,6 +6,7 @@ on:
     paths-ignore: 
       - README.md
       - .vscode
+      - .github/workflows/test.yaml
 
 permissions:
   contents: write
@@ -25,15 +26,13 @@ jobs:
         run: |
           go mod tidy
           go run ./cmd/stars/main.go
-      - name: Configure git
-        run: |
-          git config user.email 'joeriddles10@gmail.com'
-          git config user.name 'joeriddles'
       - name: Push changes 
         run: |
-          if git diff --quiet; then
+          if git diff README.md --quiet; then
             exit 0
           else
+            git config user.email 'joeriddles10@gmail.com'
+            git config user.name 'joeriddles'
             git add README.md
             git commit -m "[Automated] Update README"
             git push
