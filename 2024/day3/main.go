@@ -4,11 +4,17 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/joeriddles/advent-of-code-2024/pkg/day"
+	"github.com/joeriddles/advent-of-code-2024/pkg/util"
+)
+
+const (
+	Reset string = "\033[0m"
+	Red   string = "\033[31m"
+	Green string = "\033[32m"
 )
 
 var debug bool = false
@@ -40,7 +46,15 @@ var (
 	MUL_PATTERN  = regexp.MustCompile(`mul\((\d+),(\d+)\)`)
 	DO_PATTERN   = regexp.MustCompile(`do\(\)`)
 	DONT_PATTERN = regexp.MustCompile(`don't\(\)`)
+	ALL_PATTERN  = regexp.MustCompile(`(mul\((\d+),(\d+)\)|do\(\))|don't\(\)`)
 )
+
+type multiply struct {
+	l int
+	r int
+}
+type do struct{}
+type dont struct{}
 
 func (d *Day3) Part1(input string) int {
 	result := 0
@@ -66,59 +80,113 @@ func (d *Day3) findMul(input string) int {
 	for _, match := range matches {
 		lstr := match[1]
 		rstr := match[2]
-		l, _ := strconv.Atoi(lstr)
-		r, _ := strconv.Atoi(rstr)
+		l := d.parseInt(lstr)
+		r := d.parseInt(rstr)
 		result += l * r
 	}
 	return result
 }
 
-/* TODO(joeriddles): Use a state machine */
 func (d *Day3) findMulWithDos(input string) int {
 	result := 0
 
-	dos := d.getIndexes(DO_PATTERN.FindAllStringSubmatchIndex(input, -1))
-	donts := d.getIndexes(DONT_PATTERN.FindAllStringSubmatchIndex(input, -1))
-	muls := MUL_PATTERN.FindAllStringSubmatchIndex(input, -1)
+	enabled := true
+	for _, match := range ALL_PATTERN.FindAllString(input, -1) {
+		switch match {
+		case "do()":
+			enabled = true
+		case "don't()":
+			enabled = false
+		default:
+			if !enabled {
+				continue
+			}
 
-	if debug {
-		d.printMatches(input, dos, donts, muls)
-	}
+			var l, r int
+			_, err := fmt.Sscanf(match, "mul(%d,%d)", &l, &r)
+			if err != nil {
+				util.LogErr(err)
+				continue
+			}
 
-	for _, match := range muls {
-		enabled := d.isEnabled(match[0], &dos, &donts)
-		if enabled {
-			lstr := input[match[2]:match[3]]
-			rstr := input[match[4]:match[5]]
-			l, _ := strconv.Atoi(lstr)
-			r, _ := strconv.Atoi(rstr)
 			result += l * r
 		}
 	}
 
+	// iter := d.makeIter(input, dos, donts, muls)
+	// if debug {
+	// 	d.printIter(iter)
+	// }
+	// enabled := true
+	// for _, item := range iter {
+	// 	switch i := item.(type) {
+	// 	case do:
+	// 		enabled = true
+	// 	case dont:
+	// 		enabled = false
+	// 	case multiply:
+	// 		if enabled {
+	// 			result += (i.l * i.r)
+	// 		}
+	// 	}
+	// }
+
 	return result
 }
 
-// Check if the most recent command is to enable or disable multiplication.
-func (d *Day3) isEnabled(i int, dos *[]int, donts *[]int) bool {
-	lastDo := -1
-	lastDont := -1
+const MaxInt = int(^uint(0) >> 1)
 
-	for _, j := range *dos {
-		if j >= i {
+// Make a slice that contains, in order, the do's, don'ts, and multiplication's.
+func (d *Day3) makeIter(input string, dos []int, donts []int, muls [][]int) []any {
+	iter := []any{}
+	empty := false
+	for {
+		doi := util.HeadOrDefault(dos, MaxInt)
+		donti := util.HeadOrDefault(donts, MaxInt)
+		muli := util.HeadOrDefault(muls, []int{MaxInt})[0]
+
+		if doi < donti && doi < muli {
+			iter = append(iter, do{})
+			dos = dos[1:]
+		} else if donti < doi && donti < muli {
+			iter = append(iter, dont{})
+			donts = donts[1:]
+		} else {
+			mul := muls[0]
+			l := d.parseInt(input[mul[2]:mul[3]])
+			r := d.parseInt(input[mul[4]:mul[5]])
+			iter = append(iter, multiply{l: l, r: r})
+			muls = muls[1:]
+		}
+
+		empty = len(dos) == 0 && len(donts) == 0 && len(muls) == 0
+		if empty {
 			break
 		}
-		lastDo = j
 	}
+	return iter
+}
 
-	for _, j := range *donts {
-		if j >= i {
-			break
+func (d *Day3) printIter(iter []any) {
+	result := 0
+	enabled := true
+	for _, item := range iter {
+		switch i := item.(type) {
+		case do:
+			enabled = true
+			// fmt.Println(Reset + "do")
+		case dont:
+			enabled = false
+			// fmt.Println(Reset + "dont")
+		case multiply:
+			color := Green
+			mul := i.l * i.r
+			if enabled {
+				result += mul
+				fmt.Printf(color+"%v,%v,%v,%v\n", i.l, i.r, mul, result)
+			}
 		}
-		lastDont = j
 	}
-
-	return lastDo == -1 && lastDont == -1 || lastDo > lastDont
 }
 
 func (d *Day3) getIndexes(matches [][]int) []int {
@@ -129,47 +197,12 @@ func (d *Day3) getIndexes(matches [][]int) []int {
 	return indexes
 }
 
-const (
-	Reset string = "\033[0m"
-	Red   string = "\033[31m"
-	Green string = "\033[32m"
-)
-
-func (d *Day3) printMatches(input string, dos []int, donts []int, muls [][]int) {
-	mulIndexes := d.getIndexes(muls)
-
-	result := 0
-	enabled := true
-	for i := range input {
-		if slices.Contains(dos, i) {
-			enabled = true
-			fmt.Printf(Reset+"\n%4v: %v -- %v\n", i, input[i:i+4], result)
-		}
-		if slices.Contains(donts, i) {
-			enabled = false
-			fmt.Printf(Reset+"\n%4v: %v -- %v\n", i, input[i:i+7], result)
-		}
-		if slices.Contains(mulIndexes, i) {
-			for _, mul := range muls {
-				color := Green
-				if !enabled {
-					color = Red
-				}
-
-				if mul[0] == i {
-					if enabled {
-						lstr := input[mul[2]:mul[3]]
-						rstr := input[mul[4]:mul[5]]
-						l, _ := strconv.Atoi(lstr)
-						r, _ := strconv.Atoi(rstr)
-						result += l * r
-					}
-
-					fmt.Printf(color+"%v: %v ", i, input[mul[0]:mul[1]])
-					break
-				}
-			}
-		}
+func (d *Day3) parseInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		util.LogErr(err)
+		// return -1 to make error more obvious
+		return -1
 	}
-	fmt.Println(Reset + "\n-------")
+	return i
 }

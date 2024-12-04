@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -27,4 +29,15 @@ func ParseIntSlices(input string) []*[]int {
 		reports = append(reports, &report)
 	}
 	return reports
+}
+
+func HeadOrDefault[T any](slice []T, def T) T {
+	if len(slice) == 0 {
+		return def
+	}
+	return slice[0]
+}
+
+func LogErr(err error) {
+	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 }

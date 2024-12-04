@@ -17,8 +17,8 @@ func NewBaseDay() *BaseDay {
 }
 
 func (*BaseDay) Parse() string {
-	if len(os.Args) != 2 {
-		fmt.Println("single filepath required")
+	if len(os.Args) < 2 {
+		fmt.Println("filepath required")
 		os.Exit(1)
 	}
 
