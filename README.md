@@ -4,3 +4,8 @@
 
 - To run all solutions: `go run main.go`
 - To run all tests: `go test ./2024/...`
+
+---
+Day  1: ⭐️⭐️  
+Day  2: ⭐️⭐️  
+Day  3: ⭐️⭐️  
