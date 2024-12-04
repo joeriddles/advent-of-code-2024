@@ -30,4 +30,12 @@ jobs:
           git config user.email 'joeriddles10@gmail.com'
           git config user.name 'joeriddles'
       - name: Push changes 
-        run: ./push-changes.sh
+        run: |
+          if git diff --quiet; then
+            exit 0
+          else
+            git add README.md
+            git commit -m "[Automated] Update README"
+            git push
+          fi
+
