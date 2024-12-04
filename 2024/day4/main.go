@@ -70,7 +70,7 @@ func (d *Day4) Part1(input string) int {
 
 	// Horizontal
 	for i, line := range runes {
-		c := d.solve(line)
+		c := d.solve1(line)
 		xmas.horizontal += c
 		if debug {
 			fmt.Printf("horizontal %v: %v -- %v\n", i, string(line), c)
@@ -79,7 +79,7 @@ func (d *Day4) Part1(input string) int {
 		// Backwards
 		backwards := slices.Clone(line)
 		slices.Reverse(backwards)
-		c = d.solve(backwards)
+		c = d.solve1(backwards)
 		xmas.horizontalBackwards += c
 		if debug {
 			fmt.Printf("backwards  %v: %v -- %v\n", i, string(backwards), c)
@@ -89,18 +89,18 @@ func (d *Day4) Part1(input string) int {
 	// Vertical -- assume all lines are same length
 	for i := range runes[0] {
 		col := d.getCol(i, runes)
-		xmas.vertical += d.solve(col)
+		xmas.vertical += d.solve1(col)
 
 		// Backwards
 		backwards := slices.Clone(col)
 		slices.Reverse(backwards)
-		xmas.verticalUpsidedown += d.solve(backwards)
+		xmas.verticalUpsidedown += d.solve1(backwards)
 	}
 
 	// Diagonal
 	diags := d.getDiags(runes)
 	for _, diag := range diags {
-		xmas.diagonal += d.solve(diag)
+		xmas.diagonal += d.solve1(diag)
 	}
 
 	// Diagonal -- Backwards
@@ -110,7 +110,7 @@ func (d *Day4) Part1(input string) int {
 	}
 	diags = d.getDiags(backwards)
 	for _, diag := range diags {
-		xmas.diagonalBackwards += d.solve(diag)
+		xmas.diagonalBackwards += d.solve1(diag)
 	}
 
 	// Diagonal -- Upside-down
@@ -119,7 +119,7 @@ func (d *Day4) Part1(input string) int {
 
 	diags = d.getDiags(upsidedown)
 	for _, diag := range diags {
-		xmas.diagonalUpsidedown += d.solve(diag)
+		xmas.diagonalUpsidedown += d.solve1(diag)
 	}
 
 	// Diagonal -- Upside-down & backwards
@@ -128,7 +128,7 @@ func (d *Day4) Part1(input string) int {
 	}
 	diags = d.getDiags(upsidedown)
 	for _, diag := range diags {
-		xmas.diagonalBackwardsUpsidedown += d.solve(diag)
+		xmas.diagonalBackwardsUpsidedown += d.solve1(diag)
 	}
 
 	result := xmas.sum()
@@ -136,12 +136,40 @@ func (d *Day4) Part1(input string) int {
 }
 
 func (d *Day4) Part2(input string) int {
-	return -1
+	lines := strings.Split(input, "\n")
+	runes := [][]rune{}
+	for _, line := range lines {
+		if line == "" || WHITESPACE.MatchString(line) {
+			continue
+		}
+		runes = append(runes, []rune(line))
+	}
+
+	xmas := &xmas{}
+
+	// Diagonal
+	diags := d.getDiags(runes)
+	for _, diag := range diags {
+		xmas.diagonal += d.solve1(diag)
+	}
+
+	// Diagonal -- Backwards
+	backwards := d.deepCopy(runes)
+	for _, line := range backwards {
+		slices.Reverse(line)
+	}
+	diags = d.getDiags(backwards)
+	for _, diag := range diags {
+		xmas.diagonalBackwards += d.solve1(diag)
+	}
+
+	result := xmas.sum()
+	return result
 }
 
-func (d *Day4) solve(str []rune) int {
+func (d *Day4) solve1(str []rune) int {
 	result := 0
-	s := &stateMachine{}
+	s := newStateMachine([]rune("XMAS"))
 	for _, char := range str {
 		if s.Next(char) {
 			result++
@@ -201,30 +229,35 @@ func (d *Day4) getDiags(lines [][]rune) [][]rune {
 	return diags
 }
 
-var (
-	XMAS      = []rune("XMAS")
-	X    rune = XMAS[0]
-	M    rune = XMAS[1]
-	A    rune = XMAS[2]
-	S    rune = XMAS[3]
-)
+func newStateMachine(word []rune) *stateMachine {
+	return &stateMachine{
+		word:  word,
+		cur:   rune(0),
+		index: -1,
+	}
+}
 
 type stateMachine struct {
-	cur rune
+	word  []rune
+	cur   rune
+	index int
 }
 
 func (s *stateMachine) Next(next rune) bool {
-	if next == X {
+	if next == s.word[0] { // This assumes no repeating characters...
 		s.cur = next
-	} else if next == M && s.cur == X {
+		s.index = 0
+	} else if s.index >= 0 && s.cur == s.word[s.index] && next == s.word[s.index+1] {
 		s.cur = next
-	} else if next == A && s.cur == M {
-		s.cur = next
-	} else if next == S && s.cur == A {
-		s.cur = next
-		return true
+		s.index++
+		if s.index == len(s.word)-1 {
+			s.cur = rune(0)
+			s.index = -1
+			return true
+		}
 	} else {
 		s.cur = rune(0)
+		s.index = -1
 	}
 	return false
 }

@@ -6,9 +6,10 @@ func TestPart1_Horizontal(t *testing.T) {
 	day := &Day4{}
 
 	input := `.XMAS.`
-	if actual := day.Part1(input); actual != 1 {
-		t.Fatalf("expected %v, got %v", 1, actual)
-	}
+	assert(t, day.Part1(input), 1)
+
+	input = `....XXMAS.`
+	assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_Vertical(t *testing.T) {
@@ -176,13 +177,14 @@ MXMXAXMASX`
 	assert(t, day.Part1(input), 18)
 }
 
-// func TestPart2(t *testing.T) {
-// 	expected := 0
-// 	actual := (&Day4{}).Part2(src)
-// 	if actual != expected {
-// 		t.Fatalf("expected %v, got %v", expected, actual)
-// 	}
-// }
+func TestPart2(t *testing.T) {
+	src := `
+M.S
+.A.
+M.S`
+	actual := (&Day4{}).Part2(src)
+	assert(t, actual, 1)
+}
 
 func assert(t *testing.T, actual int, expected int) {
 	if actual != expected {
