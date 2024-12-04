@@ -38,6 +38,20 @@ func HeadOrDefault[T any](slice []T, def T) T {
 	return slice[0]
 }
 
+const (
+	Reset string = "\033[0m"
+	Red   string = "\033[31m"
+	Green string = "\033[32m"
+)
+
 func LogErr(err error) {
-	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+	fmt.Fprintf(os.Stderr, Red+"%s\n"+Reset, err.Error())
+}
+
+func LogSuccessf(format string, args ...any) {
+	fmt.Printf(Green+format+Reset, args...)
+}
+
+func LogErrf(format string, args ...any) {
+	fmt.Printf(Red+format+Reset, args...)
 }
