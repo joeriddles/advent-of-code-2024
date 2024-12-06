@@ -1,15 +1,19 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/joeriddles/advent-of-code-2024/pkg/util"
+)
 
 func TestPart1_Horizontal(t *testing.T) {
 	day := &Day4{}
 
 	input := `.XMAS.`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 
 	input = `....XXMAS.`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_Vertical(t *testing.T) {
@@ -29,10 +33,10 @@ S
 func TestPart1_Backwards(t *testing.T) {
 	day := &Day4{}
 	input := `.SAMX.`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 
 	input = `XMSMSAMASM`
-	assert(t, day.Part1(input), 0)
+	util.Assert(t, day.Part1(input), 0)
 }
 
 func TestPart1_DiagonalSimple(t *testing.T) {
@@ -42,7 +46,7 @@ X...
 .M..
 ..A.
 ...S`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_DiagonalBackwards(t *testing.T) {
@@ -52,7 +56,7 @@ func TestPart1_DiagonalBackwards(t *testing.T) {
 ..M.
 .A..
 S...`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_DiagonalExtraLine(t *testing.T) {
@@ -62,7 +66,7 @@ X...
 .M..
 ..A.
 ...S`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_DiagonalUpsideDown(t *testing.T) {
@@ -72,7 +76,7 @@ func TestPart1_DiagonalUpsideDown(t *testing.T) {
 ..A.
 .M..
 X...`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_DiagonalUpsideDownAndBackwards(t *testing.T) {
@@ -82,7 +86,7 @@ S...
 .A..
 ..M.
 ...X`
-	assert(t, day.Part1(input), 1)
+	util.Assert(t, day.Part1(input), 1)
 }
 
 func TestPart1_Placeholders(t *testing.T) {
@@ -94,7 +98,7 @@ func TestPart1_Placeholders(t *testing.T) {
 .A..A.
 XMAS.S
 .X....`
-	assert(t, day.Part1(input), 4)
+	util.Assert(t, day.Part1(input), 4)
 	// horizontal = 1
 	// horizontalBackwards = 1
 	// verticalUpsidedown = 1
@@ -106,7 +110,7 @@ XMAS.S
 ...S..A...
 ..A.A.MS.X
 XMASAMX.MM`
-	assert(t, day.Part1(input), 6)
+	util.Assert(t, day.Part1(input), 6)
 	// horizontal = 2
 	// horizontalBackwards = 2
 	// verticalUpsidedown = 1
@@ -119,7 +123,7 @@ XMASAMX.MM`
 ..A.A.MS.X
 XMASAMX.MM
 X.....XA.A`
-	assert(t, day.Part1(input), 8)
+	util.Assert(t, day.Part1(input), 8)
 
 	input = `....XXMAS.
 .SAMXMS...
@@ -131,7 +135,7 @@ S.S.S.S.SS
 .A.A.A.A.A
 ..M.M.M.MM
 .X.X.XMASX`
-	assert(t, day.Part1(input), 18)
+	util.Assert(t, day.Part1(input), 18)
 }
 
 func TestPart1(t *testing.T) {
@@ -148,7 +152,7 @@ MSAMXMSMSA
 AMXSXMAAMM
 MSAMASMSMX
 XMASAMXAMM`
-	assert(t, day.Part1(input), 6)
+	util.Assert(t, day.Part1(input), 6)
 	// horizontal = 2
 	// horizontalBackwards = 2
 	// verticalUpsidedown = 1
@@ -161,7 +165,7 @@ AMXSXMAAMM
 MSAMASMSMX
 XMASAMXAMM
 XXAMMXXAMA`
-	assert(t, day.Part1(input), 8)
+	util.Assert(t, day.Part1(input), 8)
 
 	input = `
 MMMSXXMASM
@@ -174,7 +178,7 @@ SMSMSASXSS
 SAXAMASAAA
 MAMMMXMMMM
 MXMXAXMASX`
-	assert(t, day.Part1(input), 18)
+	util.Assert(t, day.Part1(input), 18)
 }
 
 func TestPart2(t *testing.T) {
@@ -184,13 +188,13 @@ func TestPart2(t *testing.T) {
 M.S
 .A.
 M.S`
-	assert(t, day.Part2(src), 1)
+	util.Assert(t, day.Part2(src), 1)
 
 	src = `
 S.S.S.S.S.
 .A.A.A.A..
 M.M.M.M.M.`
-	assert(t, day.Part2(src), 4)
+	util.Assert(t, day.Part2(src), 4)
 
 	src = `
 .M.S......
@@ -203,11 +207,5 @@ S.S.S.S.S.
 .A.A.A.A..
 M.M.M.M.M.
 ..........`
-	assert(t, day.Part2(src), 9)
-}
-
-func assert(t *testing.T, actual int, expected int) {
-	if actual != expected {
-		t.Fatalf("expected %v, got %v", expected, actual)
-	}
+	util.Assert(t, day.Part2(src), 9)
 }

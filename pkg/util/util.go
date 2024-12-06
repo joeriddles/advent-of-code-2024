@@ -3,13 +3,23 @@ package util
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
+	"testing"
 )
 
 func Abs(i int) int {
 	if i < 0 {
 		i = -1 * i
+	}
+	return i
+}
+
+func MustParseInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(fmt.Sprintf("%v is not an int", s))
 	}
 	return i
 }
@@ -54,4 +64,22 @@ func LogSuccessf(format string, args ...any) {
 
 func LogErrf(format string, args ...any) {
 	fmt.Printf(Red+format+Reset, args...)
+}
+
+func Map[T any, R any](s []T, f func(T) R) []R {
+	rs := []R{}
+	for _, t := range s {
+		rs = append(rs, f(t))
+	}
+	return rs
+}
+
+func Assert(t *testing.T, actual int, expected int) {
+	if actual != expected {
+		t.Fatalf("expected %v, got %v", expected, actual)
+	}
+}
+
+func IsDebug() bool {
+	return slices.Contains(os.Args, "--debug")
 }

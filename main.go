@@ -9,11 +9,14 @@ import (
 
 // Solve all days
 func main() {
+	args := os.Args[1:]
 	matches, _ := filepath.Glob("2024/day*/main.go")
 	for _, fp := range matches {
 		fmt.Printf("-- %v\n", fp)
 		filename := filepath.Base(fp)
-		cmd := exec.Command("go", "run", filename, "input.txt")
+		fargs := []string{"run", filename, "input.txt"}
+		fargs = append(fargs, args...)
+		cmd := exec.Command("go", fargs...)
 		cmd.Dir = filepath.Dir(fp)
 		stdout, stderr := cmd.CombinedOutput()
 		if len(stdout) > 0 {
