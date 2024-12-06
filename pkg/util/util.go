@@ -74,6 +74,16 @@ func Map[T any, R any](s []T, f func(T) R) []R {
 	return rs
 }
 
+func Where[T any](s []T, f func(T) bool) []T {
+	res := []T{}
+	for _, t := range s {
+		if f(t) {
+			res = append(res, t)
+		}
+	}
+	return res
+}
+
 func Assert(t *testing.T, actual int, expected int) {
 	if actual != expected {
 		t.Fatalf("expected %v, got %v", expected, actual)

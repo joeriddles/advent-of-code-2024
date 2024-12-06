@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/joeriddles/advent-of-code-2024/pkg/day"
@@ -35,8 +36,57 @@ func NewDay5() day.Day {
 	}
 }
 
+type node struct {
+	val   int
+	nodes []*node
+}
+
+func newNode(val int) *node {
+	return &node{val: val, nodes: []*node{}}
+}
+
+func (n *node) valid(r int) bool {
+	for _, node := range n.nodes {
+		if node.val == r {
+			return true
+		}
+		if node.valid(r) {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *Day5) Part1(input string) int {
 	rules, updates := d.parse(input)
+	_ = updates
+
+	nodes := map[int]*node{}
+	for _, rule := range rules {
+		l, r := rule[0], rule[1]
+
+		if _, ok := nodes[l]; !ok {
+			nodes[l] = newNode(l)
+		}
+		if _, ok := nodes[r]; !ok {
+			nodes[r] = newNode(r)
+		}
+
+		nodes[l].nodes = append(nodes[l].nodes, nodes[r])
+	}
+
+	for _, update := range updates {
+		l := update[0]
+		valid := true
+		for _, r := range update[1:] {
+			if !nodes[l].valid(r) {
+				valid = false
+				break
+			}
+			l = r
+		}
+		fmt.Printf("%v: %v\n", update, valid)
+	}
 
 	// Build ruleMap of each page and what pages it must come before
 	ruleMap := map[int][]int{}
@@ -50,22 +100,58 @@ func (d *Day5) Part1(input string) int {
 		}
 	}
 
-	result := 0
-	for _, update := range updates {
-		l := update[0]
-		valid := true
-		for _, r := range update[1:] {
-			if !validate_cache(l, r, ruleMap) {
-				valid = false
+	allPages := make([]int, 0, len(ruleMap))
+	for p := range ruleMap {
+		allPages = append(allPages, p)
+	}
+
+	// Filter out nonsense pages
+	for p, rules := range ruleMap {
+		ruleMap[p] = util.Where(rules, func(r int) bool { return slices.Contains(allPages, p) })
+	}
+
+	order := []int{}
+	for {
+		if len(order) == len(allPages) {
+			break
+		}
+
+		for page, rules := range ruleMap {
+			for _, rule := range rules {
+				if !slices.Contains(allPages, rule) {
+					fmt.Printf("%v -> %v\n", page, rule)
+				}
+			}
+
+			if len(rules) == 0 {
+				order = slices.Insert(order, 0, page)
+				// prune page from rules
+				for p, rules := range ruleMap {
+					ruleMap[p] = util.Where(rules, func(p int) bool { return p != page })
+				}
+				delete(ruleMap, page)
 				break
 			}
-			l = r
-		}
-		if valid {
-			mid := update[len(update)/2]
-			result += mid
 		}
 	}
+
+	// result := 0
+	// NOTE: this stack overflows, super inefficient...
+	// for _, update := range updates {
+	// 	l := update[0]
+	// 	valid := true
+	// 	for _, r := range update[1:] {
+	// 		if !validate_cache(l, r, ruleMap) {
+	// 			valid = false
+	// 			break
+	// 		}
+	// 		l = r
+	// 	}
+	// 	if valid {
+	// 		mid := update[len(update)/2]
+	// 		result += mid
+	// 	}
+	// }
 
 	// // Order page rules
 	// for p, lts := range lookup {
@@ -78,6 +164,7 @@ func (d *Day5) Part1(input string) int {
 	// }
 
 	// // Build correct order of pages by continually grabbing the page with the lowest page rule
+	// NOTE: this doesn't work correctly...
 	// order := []int{}
 	// for {
 	// 	if len(lookup) == 0 {
@@ -99,24 +186,24 @@ func (d *Day5) Part1(input string) int {
 	// 	order = append(order, minPage)
 	// }
 
-	// // Check ordering of updates
-	// result := 0
-	// cur := -1
-	// for _, update := range updates {
-	// 	ordered := true
-	// 	for _, page := range update {
-	// 		i := slices.Index(order, page)
-	// 		if i < cur {
-	// 			ordered = false
-	// 			break
-	// 		}
-	// 		cur = i
-	// 	}
-	// 	if ordered {
-	// 		mid := update[len(update)/2]
-	// 		result += mid
-	// 	}
-	// }
+	// Check ordering of updates
+	result := 0
+	for _, update := range updates {
+		cur := -1
+		ordered := true
+		for _, page := range update {
+			i := slices.Index(order, page)
+			if i < cur {
+				ordered = false
+				break
+			}
+			cur = i
+		}
+		if ordered {
+			mid := update[len(update)/2]
+			result += mid
+		}
+	}
 
 	return result
 }
